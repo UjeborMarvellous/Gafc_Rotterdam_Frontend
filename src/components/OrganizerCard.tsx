@@ -1,8 +1,8 @@
 import React from 'react';
 import { Organizer } from '../types';
 import { useImageLazyLoading } from '../hooks/useLazyLoading';
-import { getSocialIcon } from '../utils';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
+import GlassCard from './ui/GlassCard';
 
 interface OrganizerCardProps {
   organizer: Organizer;
@@ -13,12 +13,20 @@ const OrganizerCard: React.FC<OrganizerCardProps> = ({ organizer }) => {
 
   const socialLinks = organizer.socialLinks ? Object.entries(organizer.socialLinks).filter(([_, url]) => url) : [];
 
+  const iconMap: Record<string, JSX.Element> = {
+    linkedin: <Linkedin className="h-5 w-5" />,
+    instagram: <Instagram className="h-5 w-5" />,
+    facebook: <Facebook className="h-5 w-5" />,
+    twitter: <Twitter className="h-5 w-5" />,
+    x: <Twitter className="h-5 w-5" />,
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 group overflow-hidden border border-slate-200 p-8 text-center">
-      <div ref={ref} className="relative w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden ring-4 ring-blue-100 group-hover:ring-blue-200 transition-all duration-300">
+    <GlassCard className="p-8 text-center">
+      <div ref={ref} className="relative w-40 h-40 mx-auto mb-6 overflow-hidden ring-4 ring-blue-100 group-hover:ring-blue-200 transition-all duration-300">
         {isLoading && (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 animate-pulse flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-slate-300 border-t-blue-600 animate-spin" />
           </div>
         )}
         {hasError ? (
@@ -48,23 +56,28 @@ const OrganizerCard: React.FC<OrganizerCardProps> = ({ organizer }) => {
 
       {socialLinks.length > 0 && (
         <div className="flex justify-center space-x-3">
-          {socialLinks.map(([platform, url]) => (
-            <a
-              key={platform}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group/link"
-              aria-label={`${organizer.name} on ${platform}`}
-            >
-              <span className="text-lg group-hover/link:scale-110 transition-transform duration-200">
-                {getSocialIcon(platform)}
-              </span>
-            </a>
-          ))}
+          {socialLinks.map(([platform, url]) => {
+            const key = platform.toLowerCase();
+            const icon = iconMap[key] ?? <ExternalLink className="h-5 w-5" />;
+
+            return (
+              <a
+                key={platform}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-white/40 border border-white/30 backdrop-blur-md rounded-xl flex items-center justify-center hover:bg-brand-green-600 hover:text-white transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group/link"
+                aria-label={`${organizer.name} on ${platform}`}
+              >
+                <span className="transition-transform duration-200 group-hover/link:scale-110">
+                  {icon}
+                </span>
+              </a>
+            );
+          })}
         </div>
       )}
-    </div>
+    </GlassCard>
   );
 };
 

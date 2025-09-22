@@ -18,16 +18,16 @@ const Header: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-40">
+    <header className="shadow-sm sticky top-0 z-40">
       <div className="container-custom">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          {/* <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">G</span>
             </div>
             <span className="text-xl font-bold text-gray-900">GAFC Rotterdam</span>
-          </Link>
+          </Link> */}
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">

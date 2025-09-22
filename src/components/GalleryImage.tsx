@@ -15,7 +15,7 @@ const GalleryImage: React.FC<GalleryImageProps> = ({ image, onClick }) => {
   return (
     <div
       ref={ref}
-      className="relative aspect-square rounded-2xl overflow-hidden cursor-pointer group bg-white shadow-lg hover:shadow-2xl transition-all duration-300"
+      className="relative aspect-square rounded-3xl overflow-hidden cursor-pointer group bg-white/10 backdrop-blur-xl border border-white/15 shadow-glass hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -51,7 +51,7 @@ const GalleryImage: React.FC<GalleryImageProps> = ({ image, onClick }) => {
                     <span>{new Date(image.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
-                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <div className="w-8 h-8 bg-white/25 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
                   <Eye className="w-4 h-4" />
                 </div>
               </div>

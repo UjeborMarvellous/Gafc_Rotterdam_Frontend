@@ -4,6 +4,7 @@ import { Event } from '../types';
 import { formatDate, formatTime } from '../utils';
 import { useImageLazyLoading } from '../hooks/useLazyLoading';
 import { Calendar, Clock, MapPin, Users, ArrowRight } from 'lucide-react';
+import GlassCard from './ui/GlassCard';
 
 interface EventCardProps {
   event: Event;
@@ -13,7 +14,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
   const { ref, imageSrc, isLoading, hasError } = useImageLazyLoading(event.imageUrl);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 group overflow-hidden border border-slate-200">
+    <GlassCard className="group overflow-hidden">
       <div ref={ref} className="relative h-48 overflow-hidden">
         {isLoading && (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 animate-pulse flex items-center justify-center">
@@ -39,7 +40,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         <div className="absolute top-4 right-4">
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
             event.isActive 
-              ? 'bg-green-100 text-green-800' 
+              ? 'bg-brand-green-100 text-brand-green-800' 
               : 'bg-red-100 text-red-800'
           }`}>
             {event.isActive ? 'Active' : 'Inactive'}
@@ -96,13 +97,13 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
         <Link
           to={`/events/${event._id}`}
-          className="inline-flex items-center justify-center w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg group"
+          className="inline-flex items-center justify-center w-full bg-brand-green-600 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-brand-green-700 transition-all duration-300 transform hover:-translate-y-0.5 shadow-soft hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-brand-green-600/30 group"
         >
           <span>View Details</span>
           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
         </Link>
       </div>
-    </div>
+    </GlassCard>
   );
 };
 
