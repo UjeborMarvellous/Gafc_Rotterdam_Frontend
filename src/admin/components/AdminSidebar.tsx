@@ -53,11 +53,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-full h-screen bg-white shadow-xl transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:inset-0
       `}>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full w-full">
           {/* Header */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200">
             <div className="flex items-center space-x-3">
