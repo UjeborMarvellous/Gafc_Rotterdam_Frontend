@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useCommentsStore } from '../../stores/commentsStore';
+import { useSettingsStore } from '../../stores/settingsStore';
 import { CheckIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -10,6 +11,7 @@ import toast from 'react-hot-toast';
 
 const AdminCommentsPage: React.FC = () => {
   const { comments, fetchComments, updateComment, deleteComment, isLoading } = useCommentsStore();
+  const { moderationAlerts } = useSettingsStore();
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('all');
   const [deletingComment, setDeletingComment] = useState<string | null>(null);
 
@@ -102,6 +104,13 @@ const AdminCommentsPage: React.FC = () => {
             ))}
           </nav>
         </div>
+
+        {moderationAlerts && pendingCount > 0 && (
+          <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+            <p className="font-semibold">{pendingCount} comment{pendingCount === 1 ? '' : 's'} awaiting approval</p>
+            <p className="mt-1 text-amber-700/80">Review pending entries to keep conversations visible on the public site.</p>
+          </div>
+        )}
 
         {/* Comments List */}
         {isLoading ? (

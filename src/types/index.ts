@@ -52,9 +52,16 @@ export interface Event {
   updatedAt: Date;
 }
 
+export interface EventSummary {
+  _id: string;
+  title: string;
+  date?: string;
+  location?: string;
+}
+
 export interface EventRegistration {
   _id: string;
-  eventId: string;
+  eventId: string | EventSummary;
   userEmail: string;
   userName: string;
   phoneNumber: string;
@@ -97,7 +104,6 @@ export interface Organizer {
   createdAt: Date;
   updatedAt: Date;
   phoneNumber: string;
-  
 }
 
 // Comment Types
@@ -107,6 +113,19 @@ export interface Comment {
   authorName: string;
   authorEmail: string;
   isApproved: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Contact Types
+export interface ContactMessage {
+  _id: string;
+  name: string;
+  email: string;
+  subject?: string;
+  message: string;
+  status: 'new' | 'in_review' | 'resolved';
+  adminNotes?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -128,7 +147,7 @@ export interface EventForm {
 }
 
 export interface RegistrationForm {
-  eventId: string;
+  eventId: string | EventSummary;
   userEmail: string;
   userName: string;
   phoneNumber: string;
@@ -138,6 +157,13 @@ export interface CommentForm {
   content: string;
   authorName: string;
   authorEmail: string;
+}
+
+export interface ContactMessageForm {
+  name: string;
+  email: string;
+  subject?: string;
+  message: string;
 }
 
 export interface OrganizerForm {
@@ -190,6 +216,13 @@ export interface RegistrationsState {
   pagination: PaginationData | null;
 }
 
+export interface ContactMessagesState {
+  messages: ContactMessage[];
+  isLoading: boolean;
+  error: string | null;
+  pagination: PaginationData | null;
+}
+
 // Component Props Types
 export interface ButtonProps {
   children: React.ReactNode;
@@ -201,18 +234,10 @@ export interface ButtonProps {
   className?: string;
 }
 
-export interface InputProps {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  type?: string;
-  placeholder?: string;
-  value?: string;
   error?: string;
-  required?: boolean;
   className?: string;
-  name?: string;
-  ref?: any;
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export interface ModalProps {

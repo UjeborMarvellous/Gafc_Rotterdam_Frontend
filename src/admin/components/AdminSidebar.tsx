@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Image, 
-  Users, 
-  MessageSquare, 
+import {
+  LayoutDashboard,
+  Calendar,
+  Image,
+  Users,
+  MessageSquare,
+  ClipboardList,
+  Mail,
   Settings,
   X,
   LogOut
@@ -24,6 +26,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Events', href: '/admin/events', icon: Calendar },
+    { name: 'Registrations', href: '/admin/registrations', icon: ClipboardList },
+    { name: 'Messages', href: '/admin/messages', icon: Mail },
     { name: 'Gallery', href: '/admin/gallery', icon: Image },
     { name: 'Organizers', href: '/admin/organizers', icon: Users },
     { name: 'Comments', href: '/admin/comments', icon: MessageSquare },
@@ -45,7 +49,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
     <>
       {/* Mobile backdrop */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onClose}
         />
@@ -118,7 +122,3 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) => {
 };
 
 export default AdminSidebar;
-
-
-
-

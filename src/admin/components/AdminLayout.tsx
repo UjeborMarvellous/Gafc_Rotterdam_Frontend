@@ -9,6 +9,9 @@ import AdminEventsPage from '../pages/AdminEventsPage';
 import AdminGalleryPage from '../pages/AdminGalleryPage';
 import AdminOrganizersPage from '../pages/AdminOrganizersPage';
 import AdminCommentsPage from '../pages/AdminCommentsPage';
+import AdminRegistrationsPage from '../pages/AdminRegistrationsPage';
+import AdminSettingsPage from '../pages/AdminSettingsPage';
+import AdminContactMessagesPage from '../pages/AdminContactMessagesPage';
 
 const AdminLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -24,14 +27,17 @@ const AdminLayout: React.FC = () => {
         <AdminTopBar onMenuClick={() => setSidebarOpen(true)} />
 
         {/* Page Content */}
-        <main className="py-6">
+        <main className="pt-4 pb-10 md:pt-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <Routes>
               <Route path="/" element={<AdminDashboardPage />} />
               <Route path="/events" element={<AdminEventsPage />} />
+              <Route path="/registrations" element={<AdminRegistrationsPage />} />
+              <Route path="/messages" element={<AdminContactMessagesPage />} />
               <Route path="/gallery" element={<AdminGalleryPage />} />
               <Route path="/organizers" element={<AdminOrganizersPage />} />
               <Route path="/comments" element={<AdminCommentsPage />} />
+              <Route path="/settings" element={<AdminSettingsPage />} />
             </Routes>
           </div>
         </main>
