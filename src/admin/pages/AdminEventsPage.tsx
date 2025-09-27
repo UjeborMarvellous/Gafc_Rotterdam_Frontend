@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useEventsStore } from '../../stores/eventsStore';
 import { useForm } from 'react-hook-form';
@@ -11,6 +11,7 @@ import Modal from '../../components/ui/Modal';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { formatDate, formatTime } from '../../utils';
 import toast from 'react-hot-toast';
+import { useSettingsStore } from '../../stores/settingsStore';
 
 const eventSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
@@ -26,9 +27,13 @@ type EventForm = z.infer<typeof eventSchema>;
 
 const AdminEventsPage: React.FC = () => {
   const { events, fetchEvents, createEvent, updateEvent, deleteEvent, isLoading } = useEventsStore();
+  const { defaultEventSettings } = useSettingsStore();
   const [showModal, setShowModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<string | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<string | null>(null);
+
+  const [formBanner, setFormBanner] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
+  const bannerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
     register,
@@ -44,11 +49,64 @@ const AdminEventsPage: React.FC = () => {
     },
   });
 
+  const clearFormBanner = () => {
+    if (bannerTimeoutRef.current) {
+      clearTimeout(bannerTimeoutRef.current);
+      bannerTimeoutRef.current = null;
+    }
+    setFormBanner(null);
+  };
+
+  const showFormBanner = (type: 'error' | 'success', message: string) => {
+    if (bannerTimeoutRef.current) {
+      clearTimeout(bannerTimeoutRef.current);
+    }
+
+    setFormBanner({ type, message });
+    bannerTimeoutRef.current = setTimeout(() => {
+      setFormBanner(null);
+      bannerTimeoutRef.current = null;
+    }, 5000);
+  };
+
+  const resetToDefaultValues = () => {
+    reset({
+      title: '',
+      description: '',
+      date: '',
+      location: defaultEventSettings.location || '',
+      imageUrl: '',
+      maxParticipants: defaultEventSettings.maxParticipants,
+      isActive: true,
+    });
+  };
+
+  useEffect(() => {
+    return () => {
+      if (bannerTimeoutRef.current) {
+        clearTimeout(bannerTimeoutRef.current);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     fetchEvents({ limit: 20 });
   }, [fetchEvents]);
 
   const onSubmit = async (data: EventForm) => {
+    const selectedDate = new Date(data.date);
+    const now = Date.now();
+
+    if (Number.isNaN(selectedDate.getTime())) {
+      showFormBanner('error', 'Please provide a valid date and time for this event.');
+      return;
+    }
+
+    if (selectedDate.getTime() <= now) {
+      showFormBanner('error', 'Event date must be in the future. Update the date before saving.');
+      return;
+    }
+
     try {
       if (editingEvent) {
         await updateEvent(editingEvent, data);
@@ -57,9 +115,10 @@ const AdminEventsPage: React.FC = () => {
         await createEvent(data);
         toast.success('Event created successfully');
       }
+      clearFormBanner();
       setShowModal(false);
       setEditingEvent(null);
-      reset();
+      resetToDefaultValues();
     } catch (error) {
       toast.error('Failed to save event');
     }
@@ -76,6 +135,7 @@ const AdminEventsPage: React.FC = () => {
       setValue('imageUrl', event.imageUrl);
       setValue('maxParticipants', event.maxParticipants);
       setValue('isActive', event.isActive);
+      clearFormBanner();
       setShowModal(true);
     }
   };
@@ -91,9 +151,10 @@ const AdminEventsPage: React.FC = () => {
   };
 
   const handleCloseModal = () => {
+    clearFormBanner();
     setShowModal(false);
     setEditingEvent(null);
-    reset();
+    resetToDefaultValues();
   };
 
   return (
@@ -111,7 +172,14 @@ const AdminEventsPage: React.FC = () => {
               Manage community events and registrations
             </p>
           </div>
-          <Button onClick={() => setShowModal(true)}>
+          <Button
+            onClick={() => {
+              setEditingEvent(null);
+              resetToDefaultValues();
+              clearFormBanner();
+              setShowModal(true);
+            }}
+          >
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Event
           </Button>
@@ -197,6 +265,14 @@ const AdminEventsPage: React.FC = () => {
         size="lg"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {formBanner && (
+            <div
+              role="alert"
+              className={`rounded-xl border px-4 py-3 text-sm ${formBanner.type === 'error' ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}
+            >
+              {formBanner.message}
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Event Title"
@@ -316,3 +392,4 @@ const AdminEventsPage: React.FC = () => {
 };
 
 export default AdminEventsPage;
+

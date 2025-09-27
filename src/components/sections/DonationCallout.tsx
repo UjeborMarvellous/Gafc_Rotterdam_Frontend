@@ -1,8 +1,13 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 import { Heart, ShieldCheck, Sparkles, Gift } from 'lucide-react';
 import { Section, SectionHeader, SectionContent } from '../layout/Section';
 
 const DonationCallout: React.FC = () => {
+  const handleComingSoon = () => {
+    toast.success('Our donation centre is coming online soon. Thank you for your support!');
+  };
+
   return (
     <Section id="donate" variant="light" className="rounded-3xl shadow-inner">
       <div className="grid my-20 py-10 gap-10 lg:grid-cols-[1.1fr_minmax(0,_0.9fr)] lg:items-center">
@@ -31,6 +36,7 @@ const DonationCallout: React.FC = () => {
           <div className="flex flex-wrap items-center gap-4">
             <button
               type="button"
+              onClick={handleComingSoon}
               className="inline-flex items-center gap-2 rounded-full bg-brand-green-600 px-6 py-3 text-slate-50 shadow-soft transition-transform duration-200 hover:-translate-y-1 hover:bg-brand-green-700"
             >
               <Heart className="h-5 w-5 text-white" />
@@ -38,6 +44,7 @@ const DonationCallout: React.FC = () => {
             </button>
             <button
               type="button"
+              onClick={handleComingSoon}
               className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:text-slate-900"
             >
               View Impact Plan

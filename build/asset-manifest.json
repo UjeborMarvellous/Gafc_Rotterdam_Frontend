@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/static/css/main.b582f7f4.css",
+    "main.js": "/static/js/main.6c783977.js",
+    "static/media/hero-sports-team.jpg": "/static/media/hero-sports-team.953edaa261993fd77541.jpg",
+    "index.html": "/index.html",
+    "main.b582f7f4.css.map": "/static/css/main.b582f7f4.css.map",
+    "main.6c783977.js.map": "/static/js/main.6c783977.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b582f7f4.css",
+    "static/js/main.6c783977.js"
+  ]
+}

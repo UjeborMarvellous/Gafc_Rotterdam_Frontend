@@ -5,9 +5,6 @@ import { cn } from '../../utils';
 const Input = React.forwardRef<HTMLInputElement, InputProps>(({
   label,
   type = 'text',
-  placeholder,
-  value,
-  onChange,
   error,
   required = false,
   className = '',
@@ -24,9 +21,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({
       <input
         ref={ref}
         type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
         required={required}
         className={cn(
           'input-field',

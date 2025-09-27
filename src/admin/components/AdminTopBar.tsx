@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, Search, Bell, User, ChevronDown, Settings, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 interface AdminTopBarProps {
@@ -7,7 +8,8 @@ interface AdminTopBarProps {
 }
 
 const AdminTopBar: React.FC<AdminTopBarProps> = ({ onMenuClick }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   return (
@@ -81,7 +83,11 @@ const AdminTopBar: React.FC<AdminTopBarProps> = ({ onMenuClick }) => {
                   </a>
                   <div className="border-t border-slate-200 my-1"></div>
                   <button
-                    onClick={() => setShowUserMenu(false)}
+                    onClick={() => {
+                      logout();
+                      setShowUserMenu(false);
+                      navigate('/admin/login');
+                    }}
                     className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
                   >
                     <LogOut className="w-4 h-4" />

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Users, Image as GalleryIcon, ArrowRight, Play, Trophy, ShieldCheck, Sparkles, Phone,
+import {
+  Calendar, Users, Image as GalleryIcon, ArrowRight, Play, Trophy, ShieldCheck, Sparkles, Phone,
 } from 'lucide-react';
 import EventCard from '../components/EventCard';
 import OrganizerCard from '../components/OrganizerCard';
@@ -15,6 +16,8 @@ import CommentSection from '../components/CommentSection';
 import { Section, SectionHeader, SectionContent } from '../components/layout/Section';
 import { formatDate } from '../utils';
 import AnimatedText from '../components/ui/AnimatedText';
+import FadeInSection from '../components/ui/FadeInSection';
+import AboutUsSection from '../components/sections/AboutUsSection';
 
 const heroStats = [
   { label: 'Active members', value: '450+' },
@@ -82,8 +85,8 @@ const HomePage: React.FC = () => {
   const heroImageUrl = galleryImages && galleryImages.length > 0
     ? '../Images/CountryImages.png'
     : "";
-  
-    const heroImageUrls = galleryImages && galleryImages.length > 0
+
+  const heroImageUrls = galleryImages && galleryImages.length > 0
     ? galleryImages[0].imageUrl
     : 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=2069&auto=format&fit=crop';
 
@@ -191,6 +194,7 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </Section>
+      
 
       {/* Updated: curated storytelling spotlight with visual + narrative pairing */}
       <Section variant="light" padding="md" className="rounded-t-[3rem]">
@@ -205,14 +209,18 @@ const HomePage: React.FC = () => {
               className="text-left"
             />
             <div className="mt-8 grid gap-4 text-sm text-slate-600">
-              {legacyHighlights.map(({ title, description, icon: Icon }) => (
-                <div key={title} className="flex gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              {legacyHighlights.map(({ title, description, icon: Icon }, index) => (
+                <FadeInSection
+                  key={title}
+                  delay={index * 120}
+                  className="flex gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                >
                   <Icon className="h-5 w-5 text-brand-green-600" />
                   <div>
                     <p className="text-base font-semibold text-slate-900">{title}</p>
                     <p className="mt-1 text-slate-600">{description}</p>
                   </div>
-                </div>
+                </FadeInSection>
               ))}
             </div>
           </GlassCard>
@@ -225,15 +233,24 @@ const HomePage: React.FC = () => {
       </Section>
 
       {/* Updated: quick impact metrics emphasising growth */}
-      <Section variant="subtle" padding="md" className="mb-20">
+      {/* <Section variant="subtle" padding="md" className="mb-20">
         <div className="grid gap-6 md:grid-cols-3">
-          {impactMetrics.map((stat) => (
-            <div key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-6 text-slate-800 shadow-sm">
+          {impactMetrics.map((stat, index) => (
+            <FadeInSection
+              key={stat.label}
+              delay={index * 120}
+              className="rounded-3xl border border-slate-200 bg-white p-6 text-slate-800 shadow-sm"
+            >
               <p className="text-3xl font-semibold text-slate-900">{stat.value}</p>
               <p className="mt-2 text-sm text-slate-600">{stat.label}</p>
-            </div>
+            </FadeInSection>
           ))}
         </div>
+      </Section> */}
+
+      {/* Updated: about us section with visual and narrative pairing */}
+      <Section variant="light" className="w-full">
+        <AboutUsSection />
       </Section>
 
       {/* Updated: refined events preview with modular layout */}
@@ -245,7 +262,7 @@ const HomePage: React.FC = () => {
           description="Plan your calendar with experiences tailored for family, friends, and future leaders."
           tone="light"
         />
-        <SectionContent className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <SectionContent className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-4">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="h-80 rounded-3xl border border-slate-200 bg-slate-50 animate-pulse" />
@@ -291,7 +308,7 @@ const HomePage: React.FC = () => {
           description="Dedicated professionals and volunteers ensuring every initiative feels crafted with care."
           tone="light"
         />
-        <SectionContent className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <SectionContent className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {orgLoading ? (
             Array.from({ length: 6 }).map((_, index) => (
               <div key={index} className="h-80 rounded-xl border border-slate-200 bg-slate-50 animate-pulse" />
@@ -324,7 +341,7 @@ const HomePage: React.FC = () => {
           title="Moments we never stop talking about"
           description="Relive the energy of our favourite matches, festivals, and community launches."
         />
-        <SectionContent className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <SectionContent className="my-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {galleryLoading ? (
             Array.from({ length: 6 }).map((_, index) => (
               <div key={index} className="aspect-square rounded-3xl border border-white/10 bg-white/10 animate-pulse" />
@@ -339,10 +356,10 @@ const HomePage: React.FC = () => {
             </div>
           )}
         </SectionContent>
-        <div className="mt-12 flex justify-center">
+        <div className="my-20 flex justify-center">
           <Link
             to="/gallery"
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-transform duration-200 hover:-translate-y-1 hover:border-white/40"
+            className="inline-flex items-center gap-2 rounded-full border border-black/20 px-6 py-3 text-sm font-semibold text-black/70 transition-transform duration-200 hover:-translate-y-1 hover:border-white/40"
           >
             <span>View full gallery</span>
             <GalleryIcon className="h-4 w-4" />

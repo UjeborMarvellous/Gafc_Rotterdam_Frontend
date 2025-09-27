@@ -45,11 +45,7 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
       const response = await commentsApi.createComment(commentData);
       
       if (response.success && response.data) {
-        const newComment = response.data.comment;
-        set((state) => ({
-          comments: [newComment, ...state.comments],
-          isLoading: false,
-        }));
+        set({ isLoading: false });
       } else {
         throw new Error(response.message || 'Failed to create comment');
       }

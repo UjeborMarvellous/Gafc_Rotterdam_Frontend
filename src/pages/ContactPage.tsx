@@ -1,173 +1,326 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { MapPin, Mail, Phone, Clock, MessageCircle, Instagram, Facebook, Send } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import toast from 'react-hot-toast';
+import { contactApi } from '../api/contact';
+import { ContactMessageForm } from '../types';
+
+const contactMethods = [
+  {
+    title: 'Visit Us',
+    description: 'Community Hub, Rotterdam, Netherlands',
+    icon: MapPin,
+    helper: 'Saturdays 10:00 - 16:00',
+  },
+  {
+    title: 'Email',
+    description: 'info@gafcrotterdam.com',
+    icon: Mail,
+    helper: 'We reply within 24 hours',
+  },
+  {
+    title: 'Phone',
+    description: '+31 123 456 789',
+    icon: Phone,
+    helper: 'Mon - Fri, 09:00 - 18:00',
+  },
+  {
+    title: 'Team availability',
+    description: 'Community support line',
+    icon: Clock,
+    helper: 'Always ready to help',
+  },
+];
+
+const socialLinks = [
+  {
+    name: 'WhatsApp',
+    href: '#',
+    icon: MessageCircle,
+  },
+  {
+    name: 'Instagram',
+    href: '#',
+    icon: Instagram,
+  },
+  {
+    name: 'Facebook',
+    href: '#',
+    icon: Facebook,
+  },
+];
+
+const contactMessageSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(120, 'Name should be 120 characters or fewer'),
+  email: z.string().trim().email('Please provide a valid email address'),
+  subject: z
+    .string()
+    .trim()
+    .max(160, 'Subject cannot exceed 160 characters')
+    .optional()
+    .or(z.literal('')),
+  message: z
+    .string()
+    .trim()
+    .min(10, 'Message should be at least 10 characters')
+    .max(2000, 'Message cannot exceed 2000 characters'),
+});
+
+type ContactFormValues = z.infer<typeof contactMessageSchema>;
 
 const ContactPage: React.FC = () => {
-  const socialLinks = [
-    {
-      name: 'WhatsApp',
-      href: '#',
-      icon: '📱',
-      description: 'Chat with us on WhatsApp',
+  const {
+    register,
+    handleSubmit: submitForm,
+    reset,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<ContactFormValues>({
+    resolver: zodResolver(contactMessageSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      subject: '',
+      message: '',
     },
-    {
-      name: 'Instagram',
-      href: '#',
-      icon: '📷',
-      description: 'Follow us on Instagram',
-    },
-    {
-      name: 'Facebook',
-      href: '#',
-      icon: '👥',
-      description: 'Connect with us on Facebook',
-    },
-  ];
+  });
+
+  const onSubmit = async (values: ContactFormValues) => {
+    const payload: ContactMessageForm = {
+      name: values.name.trim(),
+      email: values.email.trim(),
+      message: values.message.trim(),
+    };
+
+    const subject = values.subject?.trim();
+    if (subject) {
+      payload.subject = subject;
+    }
+
+    try {
+      const response = await contactApi.submitMessage(payload);
+
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to send your message');
+      }
+
+      toast.success('Thanks for reaching out! A member of the team will reply within 24 hours.');
+      reset({ name: '', email: '', subject: '', message: '' });
+    } catch (error: any) {
+      const validationErrors = error?.response?.data?.errors;
+      if (Array.isArray(validationErrors)) {
+        validationErrors.forEach((validationError: any) => {
+          if (validationError.param) {
+            const field = validationError.param as keyof ContactFormValues;
+            setError(field, {
+              type: 'server',
+              message: validationError.msg,
+            });
+          }
+        });
+      }
+
+      toast.error(error?.response?.data?.message || error?.message || 'We could not send your message. Please try again.');
+    }
+  };
 
   return (
     <>
       <Helmet>
         <title>Contact Us - GAFC Rotterdam</title>
-        <meta name="description" content="Get in touch with GAFC Rotterdam community. Join us and be part of something amazing." />
+        <meta
+          name="description"
+          content="Get in touch with GAFC Rotterdam. We are here to support, collaborate, and welcome new members to our community."
+        />
       </Helmet>
 
-      <div className="py-16">
+      <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50 via-white to-sky-50 py-16">
+        <div className="absolute inset-x-0 top-0 -z-[1] h-32 bg-gradient-to-b from-white to-transparent" aria-hidden />
         <div className="container-custom">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Join Our Community
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="inline-flex items-center justify-center rounded-full bg-emerald-100 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-700">
+              Get in touch
+            </span>
+            <h1 className="mt-6 text-4xl font-semibold text-slate-900 md:text-5xl">
+              We are here for our community
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Ready to be part of something amazing? Connect with us and join our growing community.
+            <p className="mt-4 text-lg text-slate-600">
+              Reach out for collaborations, volunteering, or to learn more about upcoming events. Our team loves hearing new ideas.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Information */}
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                  Get in Touch
-                </h2>
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <span className="text-primary-600 text-lg">📍</span>
+          <div className="mt-16 grid gap-12 lg:grid-cols-[1.05fr_minmax(0,_1fr)]">
+            <div className="space-y-10">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {contactMethods.map((method) => {
+                  const Icon = method.icon;
+                  return (
+                    <div
+                      key={method.title}
+                      className="rounded-3xl bg-white/70 p-6 shadow-[0_30px_70px_-45px_rgba(15,118,110,0.5)] backdrop-blur"
+                    >
+                      <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                        <Icon className="h-6 w-6" />
+                      </span>
+                      <h3 className="mt-4 text-lg font-semibold text-slate-900">{method.title}</h3>
+                      <p className="mt-2 text-sm text-slate-600">{method.description}</p>
+                      <p className="mt-3 text-xs font-medium uppercase tracking-[0.2em] text-emerald-500">
+                        {method.helper}
+                      </p>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">Location</h3>
-                      <p className="text-gray-600">Rotterdam, Netherlands</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <span className="text-primary-600 text-lg">📧</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">Email</h3>
-                      <p className="text-gray-600">info@gafcrotterdam.com</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <span className="text-primary-600 text-lg">📞</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">Phone</h3>
-                      <p className="text-gray-600">+31 123 456 789</p>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
 
-              {/* Social Media Links */}
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  Follow Us
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {socialLinks.map((social) => (
-                    <a
-                      key={social.name}
-                      href={social.href}
-                      className="card hover:shadow-lg transition-shadow duration-300 group text-center"
-                    >
-                      <div className="text-3xl mb-2 group-hover:scale-110 transition-transform duration-200">
-                        {social.icon}
-                      </div>
-                      <h4 className="font-semibold text-gray-900 mb-1">
+              <div className="flex flex-wrap items-center gap-4 border-y border-emerald-100 py-6">
+                <p className="text-sm font-medium uppercase tracking-[0.25em] text-slate-500">
+                  Follow us
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {socialLinks.map((social) => {
+                    const Icon = social.icon;
+                    return (
+                      <a
+                        key={social.name}
+                        href={social.href}
+                        className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-600"
+                      >
+                        <Icon className="h-4 w-4 transition group-hover:scale-110" />
                         {social.name}
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        {social.description}
-                      </p>
-                    </a>
-                  ))}
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
-            {/* Join Us CTA */}
-            <div className="space-y-8">
-              <div className="card bg-gradient-to-br from-primary-600 to-primary-800 text-white">
-                <h2 className="text-2xl font-semibold mb-4">
-                  Ready to Join?
-                </h2>
-                <p className="text-primary-100 mb-6">
-                  Join our community and be part of amazing events, meet new people, and create lasting memories.
-                </p>
-                <div className="space-y-4">
-                  <Link
-                    to="/events"
-                    className="block w-full btn-primary bg-white text-primary-600 hover:bg-gray-100 text-center"
-                  >
-                    Browse Events
-                  </Link>
-                  <Link
-                    to="/gallery"
-                    className="block w-full btn-outline border-white text-white hover:bg-white hover:text-primary-600 text-center"
-                  >
-                    View Gallery
-                  </Link>
+            <div className="space-y-6">
+              <div className="relative overflow-hidden rounded-[32px] bg-white shadow-[0_35px_80px_-50px_rgba(15,118,110,0.6)]">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-200/50 via-transparent to-blue-200/40" aria-hidden />
+                <div className="relative h-[320px] w-full">
+                  <iframe
+                    title="GAFC Rotterdam location"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d9781.049653881367!2d4.476876!3d51.9244205!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c434fdefa45d51%3A0x4b18c0be9a164a0a!2sRotterdam%2C%20Netherlands!5e0!3m2!1sen!2snl!4v1700000000000!5m2!1sen!2snl"
+                    className="relative h-[320px] w-full border-0"
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
                 </div>
               </div>
 
-              <div className="card">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  What We Offer
-                </h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start space-x-3">
-                    <span className="text-green-500 text-lg">✓</span>
-                    <span className="text-gray-700">Regular community events and activities</span>
-                  </li>
-                  <li className="flex items-start space-x-3">
-                    <span className="text-green-500 text-lg">✓</span>
-                    <span className="text-gray-700">Networking opportunities with like-minded people</span>
-                  </li>
-                  <li className="flex items-start space-x-3">
-                    <span className="text-green-500 text-lg">✓</span>
-                    <span className="text-gray-700">Educational workshops and seminars</span>
-                  </li>
-                  <li className="flex items-start space-x-3">
-                    <span className="text-green-500 text-lg">✓</span>
-                    <span className="text-gray-700">Social gatherings and cultural events</span>
-                  </li>
-                  <li className="flex items-start space-x-3">
-                    <span className="text-green-500 text-lg">✓</span>
-                    <span className="text-gray-700">Volunteer opportunities and community service</span>
-                  </li>
-                </ul>
+              <div className="rounded-3xl bg-white/80 p-6 shadow-[0_25px_65px_-45px_rgba(15,118,110,0.45)] backdrop-blur">
+                <h3 className="text-lg font-semibold text-slate-900">Need a quick intro deck?</h3>
+                <p className="mt-2 text-sm text-slate-600">
+                  We have a one-pager showcasing our programmes, partners, and community impact. Request it when you message us.
+                </p>
+              </div>
+            </div>
+
+            <div className="lg:col-span-2">
+              <div className="rounded-[32px] bg-white p-8 shadow-[0_45px_120px_-60px_rgba(15,118,110,0.5)]">
+                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-slate-900">
+                      Tell us how we can support you
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-600">
+                      Share a few details and a member of our organising team will reply within one working day.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-2xl bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
+                    <Send className="h-4 w-4" />
+                    Response time: under 24 hours
+                  </div>
+                </div>
+
+                <form onSubmit={submitForm(onSubmit)} className="mt-8 grid gap-6" noValidate>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <label className="block">
+                      <span className="text-sm font-medium text-slate-700">Name</span>
+                      <input
+                        type="text"
+                        autoComplete="name"
+                        {...register('name')}
+                        className={`mt-2 w-full rounded-2xl border ${errors.name ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-200'} bg-white px-4 py-3 text-sm text-slate-700 shadow-inner focus:outline-none focus:ring-2`}
+                        placeholder="Your full name"
+                        aria-invalid={!!errors.name}
+                      />
+                      {errors.name && (
+                        <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>
+                      )}
+                    </label>
+                    <label className="block">
+                      <span className="text-sm font-medium text-slate-700">Email</span>
+                      <input
+                        type="email"
+                        autoComplete="email"
+                        {...register('email')}
+                        className={`mt-2 w-full rounded-2xl border ${errors.email ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-200'} bg-white px-4 py-3 text-sm text-slate-700 shadow-inner focus:outline-none focus:ring-2`}
+                        placeholder="you@example.com"
+                        aria-invalid={!!errors.email}
+                      />
+                      {errors.email && (
+                        <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
+                      )}
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span className="text-sm font-medium text-slate-700">Subject</span>
+                    <input
+                      type="text"
+                      {...register('subject')}
+                      className={`mt-2 w-full rounded-2xl border ${errors.subject ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-200'} bg-white px-4 py-3 text-sm text-slate-700 shadow-inner focus:outline-none focus:ring-2`}
+                      placeholder="What would you like to talk about?"
+                      aria-invalid={!!errors.subject}
+                    />
+                    {errors.subject && (
+                      <p className="mt-1 text-xs text-red-600">{errors.subject.message}</p>
+                    )}
+                  </label>
+
+                  <label className="block">
+                    <span className="text-sm font-medium text-slate-700">Message</span>
+                    <textarea
+                      rows={5}
+                      {...register('message')}
+                      className={`mt-2 w-full rounded-2xl border ${errors.message ? 'border-red-300 focus:border-red-400 focus:ring-red-200' : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-200'} bg-white px-4 py-3 text-sm text-slate-700 shadow-inner focus:outline-none focus:ring-2`}
+                      placeholder="Share any details that will help us prepare."
+                      aria-invalid={!!errors.message}
+                    />
+                    {errors.message && (
+                      <p className="mt-1 text-xs text-red-600">{errors.message.message}</p>
+                    )}
+                  </label>
+
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs text-slate-500">
+                      By submitting this form you agree to let GAFC Rotterdam contact you about your request.
+                    </p>
+                    <button
+                      type="submit"
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? 'Sending...' : 'Send message'}
+                      <Send className="h-4 w-4" />
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </>
   );
 };
 
 export default ContactPage;
+
+
+

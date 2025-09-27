@@ -3,9 +3,10 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Calendar, Image, Users, Phone, Heart } from 'lucide-react';
 
 const PublicHeader: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const isHome = location.pathname === '/';
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(() => !isHome);
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -24,11 +25,20 @@ const PublicHeader: React.FC = () => {
   };
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+    if (!isHome) {
+      setScrolled(true);
+      return;
+    }
+
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 24);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isHome]);
 
   useEffect(() => {
     if (isMenuOpen) {
