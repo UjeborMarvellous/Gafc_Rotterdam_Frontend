@@ -3,6 +3,12 @@ import { OrganizersState, OrganizerForm } from '../types';
 import { organizersApi } from '../api/organizers';
 import { getErrorMessage } from '../utils';
 
+// Helper function to map backend response (id) to frontend format (_id)
+const mapOrganizerResponse = (organizer: any) => ({
+  ...organizer,
+  _id: organizer.id || organizer._id,
+});
+
 interface OrganizersStore extends OrganizersState {
   fetchOrganizers: (params?: { active?: boolean }) => Promise<void>;
   createOrganizer: (organizerData: OrganizerForm) => Promise<void>;
@@ -20,10 +26,10 @@ export const useOrganizersStore = create<OrganizersStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await organizersApi.getOrganizers(params);
-      
+
       if (response.success && response.data) {
         set({
-          organizers: response.data.organizers,
+          organizers: response.data.organizers.map(mapOrganizerResponse),
           isLoading: false,
         });
       } else {
@@ -41,9 +47,9 @@ export const useOrganizersStore = create<OrganizersStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await organizersApi.createOrganizer(organizerData);
-      
+
       if (response.success && response.data) {
-        const newOrganizer = response.data.organizer;
+        const newOrganizer = mapOrganizerResponse(response.data.organizer);
         set((state) => ({
           organizers: [newOrganizer, ...state.organizers],
           isLoading: false,
@@ -64,9 +70,9 @@ export const useOrganizersStore = create<OrganizersStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await organizersApi.updateOrganizer(id, organizerData);
-      
+
       if (response.success && response.data) {
-        const updatedOrganizer = response.data.organizer;
+        const updatedOrganizer = mapOrganizerResponse(response.data.organizer);
         set((state) => ({
           organizers: state.organizers.map((organizer) =>
             organizer._id === id ? updatedOrganizer : organizer

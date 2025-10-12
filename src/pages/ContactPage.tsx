@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { motion } from 'framer-motion';
 import { MapPin, Mail, Phone, Clock, MessageCircle, Instagram, Facebook, Send } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -7,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
 import { contactApi } from '../api/contact';
 import { ContactMessageForm } from '../types';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const contactMethods = [
   {
@@ -88,6 +90,10 @@ const ContactPage: React.FC = () => {
     },
   });
 
+  const headerAnimation = useScrollAnimation();
+  const contactMethodsAnimation = useScrollAnimation();
+  const formAnimation = useScrollAnimation();
+
   const onSubmit = async (values: ContactFormValues) => {
     const payload: ContactMessageForm = {
       name: values.name.trim(),
@@ -137,68 +143,135 @@ const ContactPage: React.FC = () => {
         />
       </Helmet>
 
-      <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50 via-white to-sky-50 py-16">
+      <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50 via-white to-sky-50 py-20">
         <div className="absolute inset-x-0 top-0 -z-[1] h-32 bg-gradient-to-b from-white to-transparent" aria-hidden />
         <div className="container-custom">
-          <div className="mx-auto max-w-3xl text-center">
-            <span className="inline-flex items-center justify-center rounded-full bg-emerald-100 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-700">
+          <motion.div
+            ref={headerAnimation.ref}
+            initial={{ opacity: 0, y: 30 }}
+            animate={headerAnimation.isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="mx-auto max-w-3xl text-center"
+          >
+            <motion.span
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={headerAnimation.isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="inline-flex items-center justify-center rounded-full bg-emerald-100 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-700"
+            >
               Get in touch
-            </span>
-            <h1 className="mt-6 text-4xl font-semibold text-slate-900 md:text-5xl">
-              We are here for our community
-            </h1>
-            <p className="mt-4 text-lg text-slate-600">
+            </motion.span>
+            <motion.h1
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={headerAnimation.isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mt-6 text-5xl font-bold text-slate-900 md:text-6xl lg:text-7xl"
+            >
+              <span className="bg-gradient-to-r from-emerald-600 via-blue-600 to-emerald-800 bg-clip-text text-transparent">
+                We are here for our community
+              </span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={headerAnimation.isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="mt-6 text-xl text-slate-600 md:text-2xl leading-relaxed"
+            >
               Reach out for collaborations, volunteering, or to learn more about upcoming events. Our team loves hearing new ideas.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
           <div className="mt-16 grid gap-12 lg:grid-cols-[1.05fr_minmax(0,_1fr)]">
             <div className="space-y-10">
-              <div className="grid gap-4 sm:grid-cols-2">
-                {contactMethods.map((method) => {
+              <motion.div
+                ref={contactMethodsAnimation.ref}
+                initial="hidden"
+                animate={contactMethodsAnimation.isVisible ? "visible" : "hidden"}
+                variants={{
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.1
+                    }
+                  }
+                }}
+                className="grid gap-4 sm:grid-cols-2"
+              >
+                {contactMethods.map((method, index) => {
                   const Icon = method.icon;
                   return (
-                    <div
+                    <motion.div
                       key={method.title}
-                      className="rounded-3xl bg-white/70 p-6 shadow-[0_30px_70px_-45px_rgba(15,118,110,0.5)] backdrop-blur"
+                      variants={{
+                        hidden: { opacity: 0, y: 30, scale: 0.9 },
+                        visible: { opacity: 1, y: 0, scale: 1 }
+                      }}
+                      transition={{
+                        duration: 0.5,
+                        ease: "easeOut"
+                      }}
+                      whileHover={{ y: -8, scale: 1.02 }}
+                      className="rounded-3xl bg-white/70 p-6 shadow-[0_30px_70px_-45px_rgba(15,118,110,0.5)] backdrop-blur hover:shadow-[0_35px_90px_-45px_rgba(15,118,110,0.7)] transition-shadow duration-300"
                     >
-                      <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                      <motion.span
+                        whileHover={{ rotate: 10, scale: 1.1 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                        className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700"
+                      >
                         <Icon className="h-6 w-6" />
-                      </span>
+                      </motion.span>
                       <h3 className="mt-4 text-lg font-semibold text-slate-900">{method.title}</h3>
                       <p className="mt-2 text-sm text-slate-600">{method.description}</p>
                       <p className="mt-3 text-xs font-medium uppercase tracking-[0.2em] text-emerald-500">
                         {method.helper}
                       </p>
-                    </div>
+                    </motion.div>
                   );
                 })}
-              </div>
+              </motion.div>
 
-              <div className="flex flex-wrap items-center gap-4 border-y border-emerald-100 py-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={contactMethodsAnimation.isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="flex flex-wrap items-center gap-4 border-y border-emerald-100 py-6"
+              >
                 <p className="text-sm font-medium uppercase tracking-[0.25em] text-slate-500">
                   Follow us
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  {socialLinks.map((social) => {
+                  {socialLinks.map((social, index) => {
                     const Icon = social.icon;
                     return (
-                      <a
+                      <motion.a
                         key={social.name}
                         href={social.href}
-                        className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-600"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={contactMethodsAnimation.isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-400 hover:text-emerald-600 hover:shadow-md"
                       >
                         <Icon className="h-4 w-4 transition group-hover:scale-110" />
                         {social.name}
-                      </a>
+                      </motion.a>
                     );
                   })}
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            <div className="space-y-6">
-              <div className="relative overflow-hidden rounded-[32px] bg-white shadow-[0_35px_80px_-50px_rgba(15,118,110,0.6)]">
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={contactMethodsAnimation.isVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="space-y-6"
+            >
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 200 }}
+                className="relative overflow-hidden rounded-[32px] bg-white shadow-[0_35px_80px_-50px_rgba(15,118,110,0.6)] hover:shadow-[0_40px_100px_-50px_rgba(15,118,110,0.8)] transition-shadow duration-300"
+              >
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-200/50 via-transparent to-blue-200/40" aria-hidden />
                 <div className="relative h-[320px] w-full">
                   <iframe
@@ -210,32 +283,58 @@ const ContactPage: React.FC = () => {
                     referrerPolicy="no-referrer-when-downgrade"
                   />
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="rounded-3xl bg-white/80 p-6 shadow-[0_25px_65px_-45px_rgba(15,118,110,0.45)] backdrop-blur">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={contactMethodsAnimation.isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                whileHover={{ scale: 1.02 }}
+                className="rounded-3xl bg-white/80 p-6 shadow-[0_25px_65px_-45px_rgba(15,118,110,0.45)] backdrop-blur hover:shadow-[0_30px_80px_-45px_rgba(15,118,110,0.6)] transition-shadow duration-300"
+              >
                 <h3 className="text-lg font-semibold text-slate-900">Need a quick intro deck?</h3>
                 <p className="mt-2 text-sm text-slate-600">
                   We have a one-pager showcasing our programmes, partners, and community impact. Request it when you message us.
                 </p>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
-            <div className="lg:col-span-2">
-              <div className="rounded-[32px] bg-white p-8 shadow-[0_45px_120px_-60px_rgba(15,118,110,0.5)]">
-                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <motion.div
+              ref={formAnimation.ref}
+              initial={{ opacity: 0, y: 40 }}
+              animate={formAnimation.isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="lg:col-span-2"
+            >
+              <motion.div
+                whileHover={{ scale: 1.01 }}
+                transition={{ type: "spring", stiffness: 200 }}
+                className="rounded-[32px] bg-white p-8 shadow-[0_45px_120px_-60px_rgba(15,118,110,0.5)] hover:shadow-[0_50px_140px_-60px_rgba(15,118,110,0.7)] transition-shadow duration-300"
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={formAnimation.isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+                >
                   <div>
-                    <h2 className="text-2xl font-semibold text-slate-900">
+                    <h2 className="text-3xl font-bold text-slate-900">
                       Tell us how we can support you
                     </h2>
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-base text-slate-600">
                       Share a few details and a member of our organising team will reply within one working day.
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 rounded-2xl bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={formAnimation.isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.5, delay: 0.5 }}
+                    className="flex items-center gap-3 rounded-2xl bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700"
+                  >
                     <Send className="h-4 w-4" />
                     Response time: under 24 hours
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
 
                 <form onSubmit={submitForm(onSubmit)} className="mt-8 grid gap-6" noValidate>
                   <div className="grid gap-6 md:grid-cols-2">
@@ -297,22 +396,29 @@ const ContactPage: React.FC = () => {
                     )}
                   </label>
 
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={formAnimation.isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                    transition={{ duration: 0.6, delay: 0.6 }}
+                    className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
                     <p className="text-xs text-slate-500">
                       By submitting this form you agree to let GAFC Rotterdam contact you about your request.
                     </p>
-                    <button
+                    <motion.button
                       type="submit"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? 'Sending...' : 'Send message'}
                       <Send className="h-4 w-4" />
-                    </button>
-                  </div>
+                    </motion.button>
+                  </motion.div>
                 </form>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </section>

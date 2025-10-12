@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Calendar, Image, Users, Phone, Heart } from 'lucide-react';
+import Modal from '../ui/Modal';
+import Button from '../ui/Button';
 
 const PublicHeader: React.FC = () => {
   const location = useLocation();
   const isHome = location.pathname === '/';
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(() => !isHome);
+  const [showComingSoonModal, setShowComingSoonModal] = useState(false);
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -48,17 +51,6 @@ const PublicHeader: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Updated: utility banner reinforces mission and contact touchpoints */}
-      {/* <div className="hidden md:block bg-[#e5e5e5] text-slate-700">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2 text-xs tracking-wide">
-          <p className="uppercase">Empowering our community in Rotterdam</p>
-          <div className="flex items-center gap-5">
-            <a href="mailto:info@gafc-rotterdam.nl" className="hover:text-slate-900 transition-colors">info@gafc-rotterdam.nl</a>
-            <span className="hidden lg:inline" aria-hidden>|</span>
-            <a href="tel:+31612345678" className="hover:text-slate-900 transition-colors">+31 6 1234 5678</a>
-          </div>
-        </div>
-      </div> */}
 
       <div
         className={`transition-all duration-300 border-b ${
@@ -69,8 +61,12 @@ const PublicHeader: React.FC = () => {
       >
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 shadow-sm">
-              <span className="text-xs font-semibold uppercase tracking-widest">Logo</span>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <img
+                src="/favicon.ico"
+                alt="GAFC Rotterdam Logo"
+                className="h-10 w-10 object-contain"
+              />
             </div>
             <div className="hidden sm:flex flex-col">
               <span className={`text-lg font-semibold ${scrolled ? 'text-slate-900' : 'text-gray-100'}`}>GAFC Rotterdam</span>
@@ -110,13 +106,14 @@ const PublicHeader: React.FC = () => {
             >
               Browse Events
             </Link>
-            <a
-              href="#donate"
+            <button
+              type="button"
+              onClick={() => setShowComingSoonModal(true)}
               className="inline-flex items-center gap-2 rounded-full bg-brand-green-600 px-5 py-2 text-sm font-semibold text-white shadow-soft transition-colors hover:bg-brand-green-700"
             >
               <Heart className="h-4 w-4" />
               Support Us
-            </a>
+            </button>
           </div>
 
           <button
@@ -156,19 +153,55 @@ const PublicHeader: React.FC = () => {
                 >
                   Browse Events
                 </Link>
-                <a
-                  href="#donate"
+                <button
+                  type="button"
+                  onClick={() => setShowComingSoonModal(true)}
                   className="rounded-xl bg-brand-green-600 px-4 py-3 text-center text-sm font-semibold text-white"
                 >
                   <span className="inline-flex items-center justify-center gap-2">
                     <Heart className="h-4 w-4" /> Support Us
                   </span>
-                </a>
+                </button>
               </div>
             </nav>
           </div>
         )}
       </div>
+
+      {/* Coming Soon Modal */}
+      <Modal
+        isOpen={showComingSoonModal}
+        onClose={() => setShowComingSoonModal(false)}
+        title="Coming Soon!"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center justify-center">
+            <div className="rounded-full bg-brand-green-100 p-6">
+              <Heart className="h-12 w-12 text-brand-green-600" />
+            </div>
+          </div>
+          <div className="text-center space-y-3">
+            <h3 className="text-xl font-semibold text-gray-900">
+              Donation Center Coming Soon!
+            </h3>
+            <p className="text-gray-600">
+              We're building a secure donation system to make it easier for you to support GAFC Rotterdam.
+            </p>
+            <p className="text-gray-600">
+              Thank you for your interest in supporting our community! We'll notify you as soon as our donation platform is ready.
+            </p>
+          </div>
+          <div className="pt-4">
+            <Button
+              onClick={() => setShowComingSoonModal(false)}
+              className="w-full"
+            >
+              Got it, thanks!
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </header>
   );
 };

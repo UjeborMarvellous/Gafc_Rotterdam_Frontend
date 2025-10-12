@@ -14,70 +14,92 @@ const OrganizerCard: React.FC<OrganizerCardProps> = ({ organizer }) => {
   const socialLinks = organizer.socialLinks ? Object.entries(organizer.socialLinks).filter(([_, url]) => url) : [];
 
   const iconMap: Record<string, JSX.Element> = {
-    linkedin: <Linkedin className="h-5 w-5" />,
-    instagram: <Instagram className="h-5 w-5" />,
-    facebook: <Facebook className="h-5 w-5" />,
-    twitter: <Twitter className="h-5 w-5" />,
-    x: <Twitter className="h-5 w-5" />,
+    linkedin: <Linkedin className="h-4 w-4" />,
+    instagram: <Instagram className="h-4 w-4" />,
+    facebook: <Facebook className="h-4 w-4" />,
+    twitter: <Twitter className="h-4 w-4" />,
+    x: <Twitter className="h-4 w-4" />,
   };
 
   return (
-    <GlassCard className="p-8 text-center">
-      <div ref={ref} className="relative w-40 h-40 mx-auto mb-6 overflow-hidden ring-4 ring-blue-100 group-hover:ring-blue-200 transition-all duration-300">
-        {isLoading && (
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 animate-pulse flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-slate-300 border-t-blue-600 animate-spin" />
-          </div>
-        )}
-        {hasError ? (
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
-            <span className="text-slate-500 text-xs font-medium">No image</span>
-          </div>
-        ) : imageSrc ? (
-          <img
-            src={imageSrc}
-            alt={organizer.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          />
-        ) : null}
-      </div>
-
-      <h3 className="text-2xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
-        {organizer.name}
-      </h3>
-      
-      <p className="text-blue-600 font-semibold mb-4 text-lg">
-        {organizer.position}
-      </p>
-      
-      <p className="text-slate-600 text-sm leading-relaxed mb-6 line-clamp-3">
-        {organizer.bio}
-      </p>
-
-      {socialLinks.length > 0 && (
-        <div className="flex justify-center space-x-3">
-          {socialLinks.map(([platform, url]) => {
-            const key = platform.toLowerCase();
-            const icon = iconMap[key] ?? <ExternalLink className="h-5 w-5" />;
-
-            return (
-              <a
-                key={platform}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-white/40 border border-white/30 backdrop-blur-md rounded-xl flex items-center justify-center hover:bg-brand-green-600 hover:text-white transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group/link"
-                aria-label={`${organizer.name} on ${platform}`}
-              >
-                <span className="transition-transform duration-200 group-hover/link:scale-110">
-                  {icon}
-                </span>
-              </a>
-            );
-          })}
+    <div className="group h-full">
+      <div className="relative h-full rounded-3xl overflow-hidden shadow-[0_10px_40px_-20px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_60px_-30px_rgba(0,0,0,0.25)] transition-all duration-500 hover:-translate-y-2">
+        {/* Full Background Image */}
+        <div ref={ref} className="absolute inset-0">
+          {isLoading && (
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 animate-pulse flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-slate-300 border-t-blue-600 animate-spin" />
+            </div>
+          )}
+          {hasError ? (
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
+              <span className="text-slate-500 text-sm font-medium">No image</span>
+            </div>
+          ) : imageSrc ? (
+            <img
+              src={imageSrc}
+              alt={organizer.name}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center">
+              <span className="text-6xl font-bold text-white">
+                {organizer.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
         </div>
-      )}
-    </GlassCard>
+
+        {/* Black Overlay with Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/30 to-black/10 group-hover:from-black/50 group-hover:via-black/20 group-hover:to-black/5 transition-all duration-500"></div>
+
+        {/* Content Overlay - Bottom Positioning */}
+        <div className="relative h-full flex flex-col justify-end p-6 text-white">
+          {/* Social Links - Top Right */}
+          {socialLinks.length > 0 && (
+            <div className="absolute top-4 right-4 flex space-x-2">
+              {socialLinks.map(([platform, url]) => {
+                const key = platform.toLowerCase();
+                const icon = iconMap[key] ?? <ExternalLink className="h-4 w-4" />;
+
+                return (
+                  <a
+                    key={platform}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl flex items-center justify-center hover:bg-white/30 hover:border-white/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group/link"
+                    aria-label={`${organizer.name} on ${platform}`}
+                  >
+                    <span className="transition-transform duration-200 group-hover/link:scale-110 text-white">
+                      {icon}
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Main Content - Top Left */}
+          <div className="space-y-2 mt-4">
+            <h3 className="text-2xl font-bold text-white group-hover:text-blue-300 transition-colors duration-300">
+              {organizer.name}
+            </h3>
+            
+            <p className="text-blue-300 font-semibold text-sm uppercase tracking-wide">
+              {organizer.position}
+            </p>
+            
+            <p className="text-white/90 text-xs leading-relaxed line-clamp-2">
+              {organizer.bio || 'Passionate community member dedicated to making a difference.'}
+            </p>
+          </div>
+        </div>
+
+        {/* Subtle Border */}
+        <div className="absolute inset-0 rounded-3xl border border-white/20 group-hover:border-white/30 transition-all duration-500"></div>
+      </div>
+    </div>
   );
 };
 

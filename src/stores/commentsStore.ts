@@ -1,10 +1,23 @@
 import { create } from 'zustand';
-import { CommentsState, CommentForm } from '../types';
+import { CommentsState, CommentForm, Comment as CommentType } from '../types';
 import { commentsApi } from '../api/comments';
 import { getErrorMessage } from '../utils';
 
+// Helper function to map backend response (id) to frontend format (_id)
+const mapCommentResponse = (comment: any) => ({
+  ...comment,
+  _id: comment.id || comment._id,
+});
+
 interface CommentsStore extends CommentsState {
-  fetchComments: (params?: { page?: number; limit?: number; approved?: boolean }) => Promise<void>;
+  fetchComments: (params?: {
+    page?: number;
+    limit?: number;
+    approved?: boolean;
+    eventId?: string;
+    parentId?: string | null;
+  }) => Promise<void>;
+  fetchReplies: (parentId: string) => Promise<CommentType[]>;
   createComment: (commentData: CommentForm) => Promise<void>;
   updateComment: (id: string, data: { isApproved: boolean }) => Promise<void>;
   deleteComment: (id: string) => Promise<void>;
@@ -21,10 +34,10 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await commentsApi.getComments(params);
-      
+
       if (response.success && response.data) {
         set({
-          comments: response.data.comments,
+          comments: response.data.comments.map(mapCommentResponse),
           pagination: response.data.pagination,
           isLoading: false,
         });
@@ -36,6 +49,21 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
         isLoading: false,
         error: getErrorMessage(error),
       });
+    }
+  },
+
+  fetchReplies: async (parentId: string) => {
+    try {
+      const response = await commentsApi.getReplies(parentId);
+
+      if (response.success && response.data) {
+        return response.data.comments.map(mapCommentResponse);
+      } else {
+        throw new Error(response.message || 'Failed to fetch replies');
+      }
+    } catch (error) {
+      console.error('Error fetching replies:', error);
+      return [];
     }
   },
 
@@ -62,9 +90,9 @@ export const useCommentsStore = create<CommentsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await commentsApi.updateComment(id, data);
-      
+
       if (response.success && response.data) {
-        const updatedComment = response.data.comment;
+        const updatedComment = mapCommentResponse(response.data.comment);
         set((state) => ({
           comments: state.comments.map((comment) =>
             comment._id === id ? updatedComment : comment

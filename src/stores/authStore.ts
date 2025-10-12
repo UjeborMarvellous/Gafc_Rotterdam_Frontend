@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AuthState } from '../types';
-import { authApi } from '../api/auth';
+import { FirebaseAuthService } from '../services/firebaseAuth';
 import { getErrorMessage } from '../utils';
 
 interface AuthStore extends AuthState {
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => void;
   validateToken: () => Promise<void>;
   clearError: () => void;
@@ -24,70 +25,188 @@ export const useAuthStore = create<AuthStore>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await authApi.login({ email, password });
+          const userCredential = await FirebaseAuthService.signInWithEmail(email, password);
+          const idToken = await userCredential.user.getIdToken();
           
-          if (response.success && response.data) {
-            const { user, token } = response.data;
-            
-            // Store in localStorage for persistence
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
-            
-            console.log('AuthStore - Login successful, setting state:', { user, token, isAuthenticated: true });
-            set({
-              user,
-              token,
-              isAuthenticated: true,
-              isLoading: false,
-              error: null,
-            });
-          } else {
-            throw new Error(response.message || 'Login failed');
-          }
+          const user = {
+            id: userCredential.user.uid,
+            email: userCredential.user.email!,
+            role: 'admin' as const,
+            name: userCredential.user.displayName || '',
+            phoneNumber: '',
+            address: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: '',
+            profileImageUrl: userCredential.user.photoURL || '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          
+          set({
+            user,
+            token: idToken,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
         } catch (error) {
           console.error('Login store error:', error);
           const errorMessage = getErrorMessage(error);
+          
+          // Handle specific Firebase errors
+          if (error instanceof Error) {
+            if (error.message.includes('network-request-failed')) {
+              set({
+                isLoading: false,
+                error: 'Network error. Please check your internet connection and try again.',
+                isAuthenticated: false,
+              });
+            } else if (error.message.includes('auth/user-not-found')) {
+              set({
+                isLoading: false,
+                error: 'No account found with this email address.',
+                isAuthenticated: false,
+              });
+            } else if (error.message.includes('auth/wrong-password')) {
+              set({
+                isLoading: false,
+                error: 'Incorrect password. Please try again.',
+                isAuthenticated: false,
+              });
+            } else {
+              set({
+                isLoading: false,
+                error: errorMessage,
+                isAuthenticated: false,
+              });
+            }
+          } else {
+            set({
+              isLoading: false,
+              error: errorMessage,
+              isAuthenticated: false,
+            });
+          }
+          throw error;
+        }
+      },
+
+      loginWithGoogle: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const userCredential = await FirebaseAuthService.signInWithGoogle();
+          const idToken = await userCredential.user.getIdToken();
+          
+          const user = {
+            id: userCredential.user.uid,
+            email: userCredential.user.email!,
+            role: 'admin' as const,
+            name: userCredential.user.displayName || '',
+            phoneNumber: '',
+            address: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: '',
+            profileImageUrl: userCredential.user.photoURL || '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          
           set({
+            user,
+            token: idToken,
+            isAuthenticated: true,
             isLoading: false,
-            error: errorMessage,
-            isAuthenticated: false,
+            error: null,
           });
+        } catch (error) {
+          console.error('Google login store error:', error);
+          const errorMessage = getErrorMessage(error);
+          
+          // Handle specific Firebase errors
+          if (error instanceof Error) {
+            if (error.message.includes('network-request-failed')) {
+              set({
+                isLoading: false,
+                error: 'Network error. Please check your internet connection and try again.',
+                isAuthenticated: false,
+              });
+            } else if (error.message.includes('auth/popup-closed-by-user')) {
+              set({
+                isLoading: false,
+                error: 'Sign-in popup was closed. Please try again.',
+                isAuthenticated: false,
+              });
+            } else {
+              set({
+                isLoading: false,
+                error: errorMessage,
+                isAuthenticated: false,
+              });
+            }
+          } else {
+            set({
+              isLoading: false,
+              error: errorMessage,
+              isAuthenticated: false,
+            });
+          }
           throw error;
         }
       },
 
       logout: () => {
+        try {
+          FirebaseAuthService.signOut();
+        } catch (error) {
+          console.error('Logout error:', error);
+        }
+        
         set({
           user: null,
           token: null,
           isAuthenticated: false,
           isLoading: false,
         });
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
       },
 
       validateToken: async () => {
-        const { token } = get();
-        if (!token) {
+        const currentUser = FirebaseAuthService.getCurrentUser();
+        if (!currentUser) {
           set({ isAuthenticated: false });
           return;
         }
 
         set({ isLoading: true });
         try {
-          const response = await authApi.validateToken();
+          const idToken = await currentUser.getIdToken();
+          const user = {
+            id: currentUser.uid,
+            email: currentUser.email!,
+            role: 'admin' as const,
+            name: currentUser.displayName || '',
+            phoneNumber: '',
+            address: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: '',
+            profileImageUrl: currentUser.photoURL || '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
           
-          if (response.success && response.data) {
-            set({
-              user: response.data.user,
-              isAuthenticated: true,
-              isLoading: false,
-            });
-          } else {
-            get().logout();
-          }
+          set({
+            user,
+            token: idToken,
+            isAuthenticated: true,
+            isLoading: false,
+          });
         } catch (error) {
+          console.error('Token validation error:', error);
           get().logout();
         }
       },
@@ -97,24 +216,50 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       initializeAuth: () => {
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
-        
-        if (token && userStr) {
-          try {
-            const user = JSON.parse(userStr);
+        // Listen to Firebase auth state changes
+        FirebaseAuthService.onAuthStateChanged((user) => {
+          if (user) {
+            user.getIdToken().then((idToken) => {
+              const userData = {
+                id: user.uid,
+                email: user.email!,
+                role: 'admin' as const, // For now, all users are admin
+                name: user.displayName || '',
+                phoneNumber: '',
+                address: '',
+                city: '',
+                state: '',
+                zipCode: '',
+                country: '',
+                profileImageUrl: user.photoURL || '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              };
+              
+              set({
+                user: userData,
+                token: idToken,
+                isAuthenticated: true,
+                isLoading: false,
+              });
+            }).catch((error) => {
+              console.error('Error getting ID token:', error);
+              set({
+                user: null,
+                token: null,
+                isAuthenticated: false,
+                isLoading: false,
+              });
+            });
+          } else {
             set({
-              user,
-              token,
-              isAuthenticated: true,
+              user: null,
+              token: null,
+              isAuthenticated: false,
               isLoading: false,
             });
-          } catch (error) {
-            console.error('Error parsing stored user:', error);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
           }
-        }
+        });
       },
     }),
     {

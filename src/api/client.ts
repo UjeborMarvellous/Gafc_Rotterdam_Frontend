@@ -9,7 +9,6 @@ class ApiClient {
   constructor() {
     this.client = axios.create({
       baseURL: API_BASE_URL,
-      // timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -22,7 +21,19 @@ class ApiClient {
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('token');
+        // Get token from Zustand persist storage
+        const authStorage = localStorage.getItem('auth-storage');
+        let token = null;
+
+        if (authStorage) {
+          try {
+            const parsed = JSON.parse(authStorage);
+            token = parsed.state?.token || null;
+          } catch (error) {
+            console.error('Error parsing auth storage:', error);
+          }
+        }
+
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -39,11 +50,16 @@ class ApiClient {
         return response;
       },
       (error) => {
+        console.error('API Error:', error.response?.status, error.response?.data);
+        
         if (error.response?.status === 401) {
-          // Token expired or invalid
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          // Token expired or invalid - only redirect if it's actually an auth issue
+          console.log('401 Unauthorized - redirecting to login');
+          localStorage.removeItem('auth-storage');
           window.location.href = '/admin/login';
+        } else if (error.response?.status === 500) {
+          // Server error - don't redirect, just show error
+          console.error('500 Server Error:', error.response?.data);
         }
         return Promise.reject(error);
       }

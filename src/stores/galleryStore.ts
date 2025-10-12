@@ -3,6 +3,12 @@ import { GalleryState } from '../types';
 import { galleryApi } from '../api/gallery';
 import { getErrorMessage } from '../utils';
 
+// Helper function to map backend response (id) to frontend format (_id)
+const mapGalleryResponse = (image: any) => ({
+  ...image,
+  _id: image.id || image._id,
+});
+
 interface GalleryStore extends GalleryState {
   fetchImages: (params?: { page?: number; limit?: number }) => Promise<void>;
   createImage: (imageData: { imageUrl: string; title: string; description?: string }) => Promise<void>;
@@ -23,7 +29,7 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
       
       if (response.success && response.data) {
         set({
-          images: response.data.images,
+          images: response.data.images.map(mapGalleryResponse),
           pagination: response.data.pagination,
           isLoading: false,
         });
@@ -44,7 +50,7 @@ export const useGalleryStore = create<GalleryStore>((set, get) => ({
       const response = await galleryApi.createGalleryImage(imageData);
       
       if (response.success && response.data) {
-        const newImage = response.data.galleryImage;
+        const newImage = mapGalleryResponse(response.data.galleryImage);
         set((state) => ({
           images: [newImage, ...state.images],
           isLoading: false,

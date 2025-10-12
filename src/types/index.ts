@@ -115,6 +115,11 @@ export interface Comment {
   isApproved: boolean;
   createdAt: string;
   updatedAt: string;
+  parentId?: string; // For nested comments
+  replies?: Comment[]; // Nested replies
+  likes?: number; // Like count
+  isLiked?: boolean; // User's like status
+  replyCount?: number; // Number of replies
 }
 
 // Contact Types
@@ -157,6 +162,7 @@ export interface CommentForm {
   content: string;
   authorName: string;
   authorEmail: string;
+  parentId?: string; // For replying to comments
 }
 
 export interface ContactMessageForm {

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { Calendar, Clock, MapPin, Users, ArrowLeft, Share2, Mail, Phone, User } from 'lucide-react';
 import { useEventsStore } from '../stores/eventsStore';
-import { useCommentsStore } from '../stores/commentsStore';
 import { registrationsApi } from '../api/registrations';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,8 +14,9 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
-import CommentSection from '../components/CommentSection';
+import CommentList from '../components/CommentList';
 import toast from 'react-hot-toast';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 const registrationSchema = z.object({
   userEmail: z.string().email('Please enter a valid email'),
@@ -28,9 +30,13 @@ const EventDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentEvent, fetchEventById, isLoading } = useEventsStore();
-  const { comments, fetchComments, isLoading: commentsLoading } = useCommentsStore();
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+
+  // Animation hooks
+  const { scrollY } = useScroll();
+  const imageY = useTransform(scrollY, [0, 300], [0, 100]);
+  const detailsAnimation = useScrollAnimation({ threshold: 0.1 });
 
   const {
     register,
@@ -44,9 +50,8 @@ const EventDetailsPage: React.FC = () => {
   useEffect(() => {
     if (id) {
       fetchEventById(id);
-      fetchComments({ limit: 10, approved: true });
     }
-  }, [id, fetchEventById, fetchComments]);
+  }, [id, fetchEventById]);
 
   const { ref, imageSrc, isLoading: imageLoading, hasError: imageError } = useImageLazyLoading(
     currentEvent?.imageUrl || ''
@@ -75,11 +80,30 @@ const EventDetailsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="py-16">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 py-16">
         <div className="container-custom">
-          <div className="flex justify-center">
-            <LoadingSpinner size="lg" />
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-8"
+          >
+            {/* Skeleton Header */}
+            <div className="skeleton h-12 w-32 rounded-xl" />
+
+            {/* Skeleton Image */}
+            <div className="skeleton h-96 rounded-3xl" />
+
+            {/* Skeleton Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <div className="skeleton h-10 w-3/4 rounded-xl" />
+                <div className="skeleton h-6 w-full rounded-lg" />
+                <div className="skeleton h-6 w-full rounded-lg" />
+                <div className="skeleton h-6 w-2/3 rounded-lg" />
+              </div>
+              <div className="skeleton h-64 rounded-3xl" />
+            </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -87,13 +111,35 @@ const EventDetailsPage: React.FC = () => {
 
   if (!currentEvent) {
     return (
-      <div className="py-16">
-        <div className="container-custom text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Event not found</h1>
-          <p className="text-gray-600 mb-8">The event you're looking for doesn't exist or has been removed.</p>
-          <Button onClick={() => navigate('/events')}>
-            Back to Events
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 py-16">
+        <div className="container-custom">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center max-w-2xl mx-auto"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring" }}
+              className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-soft"
+            >
+              <Calendar className="h-16 w-16 text-gray-400" />
+            </motion.div>
+
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Event Not Found</h1>
+            <p className="text-lg text-gray-600 mb-8">
+              The event you're looking for doesn't exist or has been removed.
+            </p>
+
+            <Button
+              onClick={() => navigate('/events')}
+              className="hover-lift inline-flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Events
+            </Button>
+          </motion.div>
         </div>
       </div>
     );
@@ -219,12 +265,12 @@ const EventDetailsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Comments */}
-              <div className="card">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Comments</h3>
-                <CommentSection comments={comments} isLoading={commentsLoading} />
-              </div>
             </div>
+          </div>
+
+          {/* Comments Section - Full Width */}
+          <div className="mt-12">
+            <CommentList eventId={id} title="Event Comments" />
           </div>
         </div>
       </div>

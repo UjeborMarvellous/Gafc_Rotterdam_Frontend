@@ -16,7 +16,8 @@ const AdminCommentsPage: React.FC = () => {
   const [deletingComment, setDeletingComment] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchComments({ limit: 50 });
+    // Fetch all comments (both top-level and replies) for admin view
+    fetchComments({ limit: 100 });
   }, [fetchComments]);
 
   const filteredComments = comments.filter(comment => {
