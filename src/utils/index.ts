@@ -26,6 +26,37 @@ export const formatTime = (date: string | Date): string => {
   return formatDate(date, 'p');
 };
 
+// Relative time formatting for comments (e.g., "2 hours ago", "Just now")
+export const formatRelativeTime = (date: string | Date): string => {
+  try {
+    const dateObj = typeof date === 'string' ? parseISO(date) : date;
+    if (!isValid(dateObj)) return 'Invalid Date';
+
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
+
+    if (diffInSeconds < 0) return 'Just now';
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+    }
+    if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    }
+    if (diffInSeconds < 604800) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    }
+
+    // For dates older than a week, show the actual date
+    return format(dateObj, 'MMM d, yyyy');
+  } catch (error) {
+    return 'Invalid Date';
+  }
+};
+
 // String utilities
 export const truncateText = (text: string, maxLength: number): string => {
   if (text.length <= maxLength) return text;

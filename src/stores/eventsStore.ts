@@ -3,6 +3,12 @@ import { Event, EventsState, EventForm } from '../types';
 import { eventsApi } from '../api/events';
 import { getErrorMessage } from '../utils';
 
+// Helper function to map backend response (id) to frontend format (_id)
+const mapEventResponse = (event: any): Event => ({
+  ...event,
+  _id: event.id || event._id,
+});
+
 interface EventsStore extends EventsState {
   fetchEvents: (params?: { page?: number; limit?: number; active?: boolean }) => Promise<void>;
   fetchEventById: (id: string) => Promise<void>;
@@ -24,10 +30,10 @@ export const useEventsStore = create<EventsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await eventsApi.getEvents(params);
-      
+
       if (response.success && response.data) {
         set({
-          events: response.data.events,
+          events: response.data.events.map(mapEventResponse),
           pagination: response.data.pagination,
           isLoading: false,
         });
@@ -46,10 +52,10 @@ export const useEventsStore = create<EventsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await eventsApi.getEventById(id);
-      
+
       if (response.success && response.data) {
         set({
-          currentEvent: response.data.event,
+          currentEvent: mapEventResponse(response.data.event),
           isLoading: false,
         });
       } else {
@@ -67,9 +73,9 @@ export const useEventsStore = create<EventsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await eventsApi.createEvent(eventData);
-      
+
       if (response.success && response.data) {
-        const newEvent = response.data.event;
+        const newEvent = mapEventResponse(response.data.event);
         set((state) => ({
           events: [newEvent, ...state.events],
           isLoading: false,
@@ -90,9 +96,9 @@ export const useEventsStore = create<EventsStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await eventsApi.updateEvent(id, eventData);
-      
+
       if (response.success && response.data) {
-        const updatedEvent = response.data.event;
+        const updatedEvent = mapEventResponse(response.data.event);
         set((state) => ({
           events: state.events.map((event) =>
             event._id === id ? updatedEvent : event

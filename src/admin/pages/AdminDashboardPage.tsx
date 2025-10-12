@@ -219,13 +219,13 @@ const AdminDashboardPage: React.FC = () => {
             <div className="flex items-center justify-center py-12 text-slate-500">Loading live event data…</div>
           ) : sortedEvents.length > 0 ? (
             <div className="divide-y divide-slate-200">
-              {sortedEvents.map((event) => {
+              {sortedEvents.map((event, index) => {
                 const participants = event.currentParticipants ?? 0;
                 const maxParticipants = event.maxParticipants || 1;
                 const progress = Math.min(100, Math.round((participants / maxParticipants) * 100));
 
                 return (
-                  <div key={event._id} className="p-6 hover:bg-slate-50 transition-colors duration-200">
+                  <div key={event._id || `event-${index}`} className="p-6 hover:bg-slate-50 transition-colors duration-200">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-lg font-semibold text-slate-900">{event.title}</h3>
@@ -291,8 +291,8 @@ const AdminDashboardPage: React.FC = () => {
             <div className="flex items-center justify-center py-12 text-slate-500">Loading community feedback…</div>
           ) : recentComments.length > 0 ? (
             <div className="p-6 space-y-4">
-              {recentComments.map((comment) => (
-                <div key={comment._id} className="p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200">
+              {recentComments.map((comment, index) => (
+                <div key={comment._id || `comment-${index}`} className="p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200">
                   <div className="flex items-start space-x-3">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-white text-sm font-semibold">

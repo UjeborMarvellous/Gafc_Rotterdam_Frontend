@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Heart, ShieldCheck, Sparkles, Gift } from 'lucide-react';
 import { Section, SectionHeader, SectionContent } from '../layout/Section';
+import Modal from '../ui/Modal';
+import Button from '../ui/Button';
 
 const DonationCallout: React.FC = () => {
+  const [showComingSoonModal, setShowComingSoonModal] = useState(false);
+
   const handleComingSoon = () => {
-    toast.success('Our donation centre is coming online soon. Thank you for your support!');
+    setShowComingSoonModal(true);
   };
 
   return (
@@ -79,6 +83,41 @@ const DonationCallout: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Coming Soon Modal */}
+      <Modal
+        isOpen={showComingSoonModal}
+        onClose={() => setShowComingSoonModal(false)}
+        title="Coming Soon!"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center justify-center">
+            <div className="rounded-full bg-brand-green-100 p-6">
+              <Heart className="h-12 w-12 text-brand-green-600" />
+            </div>
+          </div>
+          <div className="text-center space-y-3">
+            <h3 className="text-xl font-semibold text-gray-900">
+              Donation Center Coming Soon!
+            </h3>
+            <p className="text-gray-600">
+              We're building a secure donation system to make it easier for you to support GAFC Rotterdam.
+            </p>
+            <p className="text-gray-600">
+              Thank you for your interest in supporting our community! We'll notify you as soon as our donation platform is ready.
+            </p>
+          </div>
+          <div className="pt-4">
+            <Button
+              onClick={() => setShowComingSoonModal(false)}
+              className="w-full"
+            >
+              Got it, thanks!
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </Section>
   );
 };
