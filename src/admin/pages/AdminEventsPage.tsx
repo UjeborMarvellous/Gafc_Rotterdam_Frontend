@@ -163,11 +163,11 @@ const AdminEventsPage: React.FC = () => {
         <title>Events Management - Admin Panel</title>
       </Helmet>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Events Management</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Events Management</h1>
             <p className="mt-1 text-sm text-gray-500">
               Manage community events and registrations
             </p>
@@ -179,80 +179,132 @@ const AdminEventsPage: React.FC = () => {
               clearFormBanner();
               setShowModal(true);
             }}
+            className="w-full sm:w-auto"
           >
             <PlusIcon className="h-4 w-4 mr-2" />
             Add Event
           </Button>
         </div>
 
-        {/* Events Table */}
+        {/* Events Cards - Horizontal Scroll */}
         {isLoading ? (
           <div className="flex justify-center py-12">
             <LoadingSpinner size="lg" />
           </div>
-        ) : (
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
+        ) : events.length > 0 ? (
+          <div className="relative">
+            {/* Scrollable Container */}
+            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-4">
+              <div className="flex space-x-4 min-w-max">
               {events.map((event) => (
-                <li key={event._id}>
-                  <div className="px-4 py-4 flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-16 w-16">
-                        <img
-                          className="h-16 w-16 rounded-lg object-cover"
+                  <div
+                    key={event._id}
+                    className="flex-shrink-0 w-80 sm:w-96 bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300"
+                  >
+                    {/* Event Image */}
+                    <div className="relative h-48 w-full">
+                      <img
+                        className="h-48 w-full rounded-t-xl object-cover"
                           src={event.imageUrl}
                           alt={event.title}
                         />
-                      </div>
-                      <div className="ml-4">
-                        <div className="flex items-center">
-                          <h3 className="text-lg font-medium text-gray-900">
-                            {event.title}
-                          </h3>
                           {!event.isActive && (
-                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        <div className="absolute top-3 right-3">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                               Inactive
                             </span>
+                        </div>
                           )}
                         </div>
-                        <p className="text-sm text-gray-500 line-clamp-2">
+                    
+                    {/* Event Content */}
+                    <div className="p-4 sm:p-6">
+                      <div className="mb-3">
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+                          {event.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">
                           {event.description}
                         </p>
-                        <div className="mt-1 flex items-center text-sm text-gray-500">
+                      </div>
+                      
+                      {/* Event Details */}
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center text-sm text-gray-500">
+                          <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
                           <span>{formatDate(event.date)} at {formatTime(event.date)}</span>
-                          <span className="mx-2">•</span>
-                          <span>{event.location}</span>
-                          <span className="mx-2">•</span>
-                          <span>{event.currentParticipants}/{event.maxParticipants} participants</span>
                         </div>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span className="truncate">{event.location}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                          <span>{event.currentParticipants || 0}/{event.maxParticipants} participants</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                      
+                      {/* Action Buttons */}
+                      <div className="flex space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleEdit(event._id)}
+                          className="flex-1"
                       >
-                        <PencilIcon className="h-4 w-4" />
+                          <PencilIcon className="h-4 w-4 mr-1" />
+                          Edit
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setDeletingEvent(event._id)}
-                        className="text-red-600 hover:text-red-700"
+                          className="flex-1 text-red-600 hover:text-red-700 hover:border-red-300"
                       >
-                        <TrashIcon className="h-4 w-4" />
+                          <TrashIcon className="h-4 w-4 mr-1" />
+                          Delete
                       </Button>
                     </div>
                   </div>
-                </li>
-              ))}
-            </ul>
-            {events.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No events found. Create your first event!</p>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+            
+            {/* Scroll Indicator */}
+            <div className="absolute top-1/2 -translate-y-1/2 right-0 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-400 pointer-events-none">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-12 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No events found</h3>
+            <p className="text-gray-500 mb-4">Create your first event to get started!</p>
+            <Button
+              onClick={() => {
+                setEditingEvent(null);
+                resetToDefaultValues();
+                clearFormBanner();
+                setShowModal(true);
+              }}
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Create Event
+            </Button>
           </div>
         )}
       </div>
@@ -273,7 +325,7 @@ const AdminEventsPage: React.FC = () => {
               {formBanner.message}
             </div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Event Title"
               error={errors.title?.message}
@@ -304,7 +356,7 @@ const AdminEventsPage: React.FC = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Date & Time"
               type="datetime-local"

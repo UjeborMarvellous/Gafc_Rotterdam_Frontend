@@ -7,11 +7,10 @@ import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
 import { formatDateTime, truncateText } from '../../utils';
 
-const statusLabels: Record<'all' | 'new' | 'in_review' | 'resolved', string> = {
+const filterLabels: Record<'all' | 'new' | 'past', string> = {
   all: 'All enquiries',
   new: 'New',
-  in_review: 'In review',
-  resolved: 'Resolved',
+  past: 'Past',
 };
 
 const statusStyles: Record<'new' | 'in_review' | 'resolved', string> = {
@@ -20,44 +19,64 @@ const statusStyles: Record<'new' | 'in_review' | 'resolved', string> = {
   resolved: 'bg-slate-200 text-slate-700 border border-slate-300',
 };
 
+const messageStatusLabels: Record<'new' | 'in_review' | 'resolved', string> = {
+  new: 'New',
+  in_review: 'In review',
+  resolved: 'Resolved',
+};
+
 const AdminContactMessagesPage: React.FC = () => {
   const { messages, fetchMessages, isLoading, error, pagination } = useContactMessagesStore();
-  const [filter, setFilter] = useState<'all' | 'new' | 'in_review' | 'resolved'>('all');
+  const [filter, setFilter] = useState<'all' | 'new' | 'past'>('all');
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
 
   useEffect(() => {
-    const params: { page?: number; limit?: number; status?: 'new' | 'in_review' | 'resolved' } = {
+    const params: { page?: number; limit?: number } = {
       page: 1,
-      limit: 25,
+      limit: 100, // Fetch more messages to handle client-side filtering
     };
-
-    if (filter !== 'all') {
-      params.status = filter;
-    }
 
     fetchMessages(params);
-  }, [fetchMessages, filter]);
+  }, [fetchMessages]);
 
-  const totals = useMemo(() => {
-    const aggregate = {
-      total: pagination?.total ?? messages.length,
-      new: 0,
-      in_review: 0,
-      resolved: 0,
-    };
+  // Categorize messages into New (recent) and Past (7+ days old)
+  const { newMessages, pastMessages } = useMemo(() => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    const newMsgs: typeof messages = [];
+    const pastMsgs: typeof messages = [];
 
     messages.forEach((message) => {
-      if (message.status === 'new') aggregate.new += 1;
-      if (message.status === 'in_review') aggregate.in_review += 1;
-      if (message.status === 'resolved') aggregate.resolved += 1;
+      const messageDate = new Date(message.createdAt);
+      if (messageDate >= sevenDaysAgo) {
+        newMsgs.push(message);
+      } else {
+        pastMsgs.push(message);
+      }
     });
 
-    return aggregate;
-  }, [messages, pagination]);
+    return { newMessages: newMsgs, pastMessages: pastMsgs };
+  }, [messages]);
 
-  const displayMessages = filter === 'all'
-    ? messages
-    : messages.filter((message) => message.status === filter);
+  const totals = useMemo(() => {
+    return {
+      total: messages.length,
+      new: newMessages.length,
+      past: pastMessages.length,
+    };
+  }, [messages.length, newMessages.length, pastMessages.length]);
+
+  const displayMessages = useMemo(() => {
+    switch (filter) {
+      case 'new':
+        return newMessages;
+      case 'past':
+        return pastMessages;
+      default:
+        return messages;
+    }
+  }, [filter, newMessages, pastMessages, messages]);
 
   return (
     <>
@@ -82,15 +101,15 @@ const AdminContactMessagesPage: React.FC = () => {
               <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">New</p>
               <p className="mt-1 text-xl font-bold text-emerald-700">{totals.new}</p>
             </div>
-            <div className="rounded-2xl bg-white px-4 py-3 shadow border border-amber-200">
-              <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">In review</p>
-              <p className="mt-1 text-xl font-bold text-amber-700">{totals.in_review}</p>
+            <div className="rounded-2xl bg-white px-4 py-3 shadow border border-slate-300">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Past</p>
+              <p className="mt-1 text-xl font-bold text-slate-700">{totals.past}</p>
             </div>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-3 border-b border-slate-200 pb-2">
-          {(Object.keys(statusLabels) as Array<'all' | 'new' | 'in_review' | 'resolved'>).map((key) => (
+          {(Object.keys(filterLabels) as Array<'all' | 'new' | 'past'>).map((key) => (
             <button
               key={key}
               type="button"
@@ -101,7 +120,7 @@ const AdminContactMessagesPage: React.FC = () => {
                   : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:text-slate-900'
               }`}
             >
-              {statusLabels[key]}
+              {filterLabels[key]}
             </button>
           ))}
         </div>
@@ -118,73 +137,86 @@ const AdminContactMessagesPage: React.FC = () => {
           </div>
         ) : displayMessages.length === 0 ? (
           <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center text-slate-600">
-            <p className="text-lg font-semibold text-slate-800 mb-2">No enquiries in this view</p>
+            <p className="text-lg font-semibold text-slate-800 mb-2">
+              No {filter === 'all' ? 'enquiries' : filter === 'new' ? 'new messages' : 'past messages'} in this view
+            </p>
             <p className="text-sm text-slate-500">
               {filter === 'all'
                 ? 'When supporters submit the contact form, the details will appear here.'
-                : 'Change the filter or check back later for updates.'}
+                : filter === 'new'
+                ? 'No new messages from the last 7 days.'
+                : 'No messages older than 7 days.'}
             </p>
           </div>
         ) : (
           <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow">
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Supporter
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Subject
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Received
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Message
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {displayMessages.map((message) => (
-                  <tr key={message._id} className="hover:bg-slate-50">
-                    <td className="px-6 py-4 text-sm text-slate-800">
-                      <div className="font-semibold text-slate-900">{message.name}</div>
-                      <a href={`mailto:${message.email}`} className="text-xs text-slate-500 hover:text-slate-700">
-                        {message.email}
-                      </a>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-700">
-                      {message.subject ? truncateText(message.subject, 60) : <span className="text-slate-400">(No subject)</span>}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {formatDateTime(message.createdAt)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[message.status]}`}>
-                        {statusLabels[message.status] ?? message.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm text-slate-600 hidden lg:block">
-                          {truncateText(message.message, 60)}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedMessage(message)}
-                        >
-                          View
-                        </Button>
-                      </div>
-                    </td>
+            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 min-w-[200px]">
+                      Supporter
+                    </th>
+                    <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 min-w-[150px]">
+                      Subject
+                    </th>
+                    <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 min-w-[120px]">
+                      Received
+                    </th>
+                    <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 min-w-[100px]">
+                      Status
+                    </th>
+                    <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 min-w-[200px]">
+                      Message
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {displayMessages.map((message) => (
+                    <tr key={message._id} className="hover:bg-slate-50">
+                      <td className="px-4 sm:px-6 py-4 text-sm text-slate-800">
+                        <div className="space-y-1">
+                          <div className="font-semibold text-slate-900 text-sm sm:text-base truncate max-w-48">{message.name}</div>
+                          <a href={`mailto:${message.email}`} className="text-xs text-slate-500 hover:text-slate-700 truncate max-w-48 block">
+                            {message.email}
+                          </a>
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 text-sm text-slate-700">
+                        <div className="truncate max-w-48">
+                          {message.subject ? truncateText(message.subject, 40) : <span className="text-slate-400">(No subject)</span>}
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 text-sm text-slate-600">
+                        <div className="text-xs sm:text-sm">
+                          {formatDateTime(message.createdAt)}
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4">
+                        <span className={`inline-flex items-center rounded-full px-2 sm:px-3 py-1 text-xs font-semibold ${statusStyles[message.status]}`}>
+                          {messageStatusLabels[message.status]}
+                        </span>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className="text-xs sm:text-sm text-slate-600 hidden lg:block truncate max-w-48">
+                            {truncateText(message.message, 40)}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedMessage(message)}
+                            className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 flex-shrink-0"
+                          >
+                            View
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

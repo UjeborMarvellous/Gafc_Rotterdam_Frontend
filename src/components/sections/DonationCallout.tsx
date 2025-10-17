@@ -14,7 +14,7 @@ const DonationCallout: React.FC = () => {
 
   return (
     <Section id="donate" variant="light" className="rounded-3xl shadow-inner">
-      <div className="grid my-20 py-10 gap-10 lg:grid-cols-[1.1fr_minmax(0,_0.9fr)] lg:items-center">
+      <div className="grid md:my-20 my-0 py-6 gap-10 lg:grid-cols-[1.1fr_minmax(0,_0.9fr)] lg:items-center">
         <div className="space-y-8">
           <SectionHeader
             eyebrow="Community Fund"
@@ -56,7 +56,7 @@ const DonationCallout: React.FC = () => {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-[#f7f7f7] p-8 shadow-lg">
+        <div className="rounded-3xl border border-slate-200 bg-[#f7f7f7] md:p-8 p-4 shadow-lg">
           <div className="flex flex-col gap-6">
             <div>
               <p className="text-sm uppercase tracking-[0.35em] text-slate-500">What your gift unlocks</p>

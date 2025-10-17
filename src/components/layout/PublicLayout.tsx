@@ -15,7 +15,7 @@ const PublicLayout: React.FC = () => {
     <div className="relative min-h-screen bg-[#e5e5e5] text-slate-900">
       <div className="relative z-10 flex min-h-screen flex-col">
         <PublicHeader />
-        <main className="flex-1">
+        <main className="flex-1 -mt-11">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/events" element={<EventsPage />} />
