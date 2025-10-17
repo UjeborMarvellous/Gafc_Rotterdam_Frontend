@@ -25,8 +25,8 @@ const pillars = [
 const AboutUsSection: React.FC = () => {
   return (
     <Section variant="light">
-      {/* Container with 10% margins on each side */}
-      <div className="-mx-[16%]">
+      {/* Container with responsive margins */}
+      <div className="lg:-mx-[16%]">
         <div className="grid items-center py-24 gap-16 lg:grid-cols-[1.2fr_minmax(0,1fr)]">
           <FadeInSection className="space-y-10 " direction="up">
             {/* Enhanced Our Story Badge */}

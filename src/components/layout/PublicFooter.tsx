@@ -35,11 +35,11 @@ const PublicFooter: React.FC = () => {
     <footer className="relative bg-[#e5e5e5] text-slate-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Updated: spotlight band drives users toward the donation anchor */}
-        <div className="-mt-12 mb-12 overflow-hidden rounded-3xl border border-slate-200 bg-white px-6 py-10 shadow-lg">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="-mt-12 mb-8 sm:mb-12 overflow-hidden rounded-3xl border border-slate-200 bg-white px-4 sm:px-6 py-6 sm:py-10 shadow-lg">
+          <div className="flex flex-col gap-4 sm:gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.35em] text-slate-500">Support the community</p>
-              <h3 className="mt-2 text-2xl font-semibold">Invest in programmes that uplift the Rotterdam community.</h3>
+              <h3 className="mt-2 md:text-2xl text-lg font-semibold">Invest in programmes that uplift the Rotterdam community.</h3>
             </div>
             <a
               href="#donate"
@@ -51,9 +51,9 @@ const PublicFooter: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-10 pb-12 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:gap-10 pb-8 sm:pb-12 md:grid-cols-2 lg:grid-cols-4">
           {/* Updated: brand block includes clear logo placeholder */}
-          <div className="space-y-6 lg:col-span-2">
+          <div className="space-y-4 sm:space-y-6 lg:col-span-2">
             <div className="flex items-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 shadow-sm">
                 <span className="text-xs font-semibold uppercase tracking-[0.3em]">Logo</span>
@@ -66,7 +66,7 @@ const PublicFooter: React.FC = () => {
             <p className="max-w-lg text-sm text-slate-600">
               We celebrate excellence on and off the pitch. Discover events, connect with organisers, and champion programmes that strengthen every generation of the community in Rotterdam.
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               {socialLinks.map((social) => {
                 const Icon = social.icon;
                 return (
@@ -85,7 +85,7 @@ const PublicFooter: React.FC = () => {
 
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-wider text-slate-600">Quick Links</h4>
-            <ul className="mt-4 space-y-3 text-sm">
+            <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-3 text-sm">
               {quickLinks.map((link) => {
                 const Icon = link.icon;
                 return (
@@ -103,9 +103,9 @@ const PublicFooter: React.FC = () => {
             </ul>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <h4 className="text-sm font-semibold uppercase tracking-wider text-slate-600">Visit or Contact</h4>
-            <div className="space-y-3 text-sm text-slate-600">
+            <div className="space-y-2 sm:space-y-3 text-sm text-slate-600">
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-brand-green-600" />
                 <span>Rotterdam, Netherlands</span>
@@ -122,8 +122,8 @@ const PublicFooter: React.FC = () => {
           </div>
         </div>
 
-        <div className="border-t border-slate-200 py-6 text-sm text-slate-600">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+        <div className="border-t border-slate-200 py-4 sm:py-6 text-sm text-slate-600">
+          <div className="flex flex-col items-center justify-between gap-3 sm:gap-4 md:flex-row">
             <p>© {currentYear} GAFC Rotterdam. All rights reserved.</p>
             <div className="flex items-center gap-6">
               <Link to="/privacy" className="hover:text-brand-green-600 transition-colors">Privacy Policy</Link>

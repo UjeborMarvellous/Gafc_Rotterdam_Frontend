@@ -45,7 +45,7 @@ export const Section: React.FC<SectionProps> = ({
 }) => {
   const containerBase = containerMode === 'full'
     ? 'w-full px-0'
-    : 'mx-auto max-w-[80%] px-4 sm:px-6 lg:px-8';
+    : 'mx-auto w-full px-4 sm:px-6 lg:px-8 lg:max-w-[80%]';
 
   return (
     <section
